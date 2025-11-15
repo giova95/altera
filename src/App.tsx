@@ -9,6 +9,7 @@ import Onboarding from "./pages/Onboarding";
 import Workspace from "./pages/Workspace";
 import ScenarioSetup from "./pages/ScenarioSetup";
 import PersonaCreate from "./pages/PersonaCreate";
+import PersonaManagement from "./pages/PersonaManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/workspace" element={<Workspace />} />
           <Route path="/scenario/setup" element={<ScenarioSetup />} />
           <Route path="/persona/create" element={<PersonaCreate />} />
+          <Route path="/persona/management" element={<PersonaManagement />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

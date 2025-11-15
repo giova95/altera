@@ -9,6 +9,7 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Workspace from "./pages/Workspace";
 import ScenarioSetup from "./pages/ScenarioSetup";
+import VoiceCall from "./pages/VoiceCall";
 import PersonaCreate from "./pages/PersonaCreate";
 import PersonaDemo from "./pages/PersonaDemo";
 import PersonaManagement from "./pages/PersonaManagement";
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/workspace" element={<Workspace />} />
           <Route path="/scenario/setup" element={<ScenarioSetup />} />
+          <Route path="/voice-call" element={<VoiceCall />} />
           <Route path="/persona/create" element={<PersonaCreate />} />
           <Route path="/persona/demo" element={<PersonaDemo />} />
           <Route path="/persona/management" element={<PersonaManagement />} />

@@ -77,6 +77,9 @@ export const DemoRecordingStep = ({ onContinue, onBack }: DemoRecordingStepProps
 
       const { data, error } = await supabase.functions.invoke('elevenlabs-create-voice', {
         body: formData,
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       if (error) throw error;

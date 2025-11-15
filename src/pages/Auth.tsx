@@ -82,7 +82,7 @@ const Auth = () => {
             title: "Welcome back!",
             description: "You've successfully signed in.",
           });
-          
+
           navigate(isAdminOrHR ? "/admin/dashboard" : "/dashboard");
         }
       }
@@ -102,9 +102,7 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">Altera</h1>
-          <p className="text-muted-foreground">
-            Master difficult conversations with AI-powered practice. Build confidence in real workplace scenarios.
-          </p>
+          <p className="text-muted-foreground">Turning difficult conversations into productive dialogue.</p>
         </div>
 
         <Card className="shadow-medium border-border/50">

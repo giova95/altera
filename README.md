@@ -1,7 +1,5 @@
 # Altera
 
-Master difficult workplace conversations through AI-powered practice simulations.
-
 ## Overview
 
 Altera is an enterprise training platform that helps employees build confidence in challenging workplace scenarios using personalized AI personas. Practice feedback conversations, conflict resolution, performance reviews, and more in a safe, judgment-free environment.
@@ -17,11 +15,13 @@ Altera is an enterprise training platform that helps employees build confidence 
 ## Test Credentials
 
 ### HR Role
+
 - **Email**: `f.delvecchio@altera.com`
 - **Password**: `password`
 - **Access**: Admin dashboard with full analytics and team management
 
 ### Manager Role
+
 - **Email**: `l.catalano@altera.com`
 - **Password**: `password`
 - **Access**: Standard dashboard with personal training sessions
@@ -48,4 +48,3 @@ Deploy via [Lovable](https://lovable.dev/projects/08efcabc-013a-4698-bb36-a75467
 ## License
 
 Proprietary - All rights reserved
-

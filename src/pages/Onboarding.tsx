@@ -21,20 +21,19 @@ const Onboarding = () => {
     if (!workRole) return;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      await supabase
-        .from("profiles")
-        .update({ work_role: workRole })
-        .eq("id", user.id);
+      await supabase.from("profiles").update({ work_role: workRole }).eq("id", user.id);
 
       toast({
         title: "Profile updated!",
         description: "Let's start improving your communication skills.",
       });
 
-      navigate("/workspace");
+      navigate("/dashboard");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -49,18 +48,14 @@ const Onboarding = () => {
       <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Welcome to Altera</h1>
-          <p className="text-muted-foreground">
-            Let's personalize your experience
-          </p>
+          <p className="text-muted-foreground">Let's personalize your experience</p>
         </div>
 
         {step === 1 && (
           <Card className="shadow-medium">
             <CardHeader>
               <CardTitle>What's your role?</CardTitle>
-              <CardDescription>
-                This helps us tailor simulations and coaching to your needs
-              </CardDescription>
+              <CardDescription>This helps us tailor simulations and coaching to your needs</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <RadioGroup value={workRole || ""} onValueChange={(value) => setWorkRole(value as WorkRole)}>
@@ -105,11 +100,7 @@ const Onboarding = () => {
                 </div>
               </RadioGroup>
 
-              <Button
-                onClick={() => setStep(2)}
-                disabled={!workRole}
-                className="w-full"
-              >
+              <Button onClick={() => setStep(2)} disabled={!workRole} className="w-full">
                 Continue
               </Button>
             </CardContent>
@@ -120,9 +111,7 @@ const Onboarding = () => {
           <Card className="shadow-medium">
             <CardHeader>
               <CardTitle>What do you want to improve first?</CardTitle>
-              <CardDescription>
-                We'll help you practice these conversations
-              </CardDescription>
+              <CardDescription>We'll help you practice these conversations</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <RadioGroup value={focusArea || ""} onValueChange={(value) => setFocusArea(value as Theme)}>
@@ -163,18 +152,10 @@ const Onboarding = () => {
               </RadioGroup>
 
               <div className="flex gap-2">
-                <Button
-                  onClick={() => setStep(1)}
-                  variant="outline"
-                  className="flex-1"
-                >
+                <Button onClick={() => setStep(1)} variant="outline" className="flex-1">
                   Back
                 </Button>
-                <Button
-                  onClick={handleComplete}
-                  disabled={!focusArea}
-                  className="flex-1"
-                >
+                <Button onClick={handleComplete} disabled={!focusArea} className="flex-1">
                   Get started
                 </Button>
               </div>

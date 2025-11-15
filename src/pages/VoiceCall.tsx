@@ -102,7 +102,7 @@ const VoiceCall = () => {
 
   const handleCallEnd = async () => {
     if (!conversationId) {
-      navigate("/workspace");
+      navigate("/dashboard");
       return;
     }
 
@@ -166,7 +166,7 @@ const VoiceCall = () => {
         description: "Conversation saved successfully",
       });
 
-      navigate("/workspace");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error saving conversation:", error);
       toast({
@@ -174,7 +174,7 @@ const VoiceCall = () => {
         description: "Failed to save conversation",
         variant: "destructive",
       });
-      navigate("/workspace");
+      navigate("/dashboard");
     }
   };
 

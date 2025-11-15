@@ -5,13 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import type { Database } from "@/integrations/supabase/types";
+
+type WorkRole = Database["public"]["Enums"]["work_role"];
+
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [workRole, setWorkRole] = useState<WorkRole>("individual_contributor");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -39,7 +45,7 @@ const Auth = () => {
               id: authData.user.id,
               email: email,
               full_name: name || email.split("@")[0],
-              work_role: "individual_contributor",
+              work_role: workRole,
               user_role: "standard",
             });
 
@@ -98,16 +104,34 @@ const Auth = () => {
           <CardContent>
             <form onSubmit={handleAuth} className="space-y-4">
               {isSignUp && (
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Your name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="workRole">Your Role</Label>
+                    <Select value={workRole} onValueChange={(value: WorkRole) => setWorkRole(value)}>
+                      <SelectTrigger id="workRole">
+                        <SelectValue placeholder="Select your role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="individual_contributor">Analyst / Individual Contributor</SelectItem>
+                        <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="leadership">C-Level / Leadership</SelectItem>
+                        <SelectItem value="hr">HR</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
               )}
 
               <div className="space-y-2">

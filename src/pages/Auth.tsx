@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,69 +8,68 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/workspace");
-      }
-    };
-    checkUser();
-  }, [navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+      if (isSignUp) {
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+          },
+        });
+
+        if (signUpError) throw signUpError;
+
+        if (authData.user) {
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .insert({
+              id: authData.user.id,
+              email: email,
+              full_name: name || email.split("@")[0],
+              work_role: "individual_contributor",
+              user_role: "standard",
+            });
+
+          if (profileError) throw profileError;
+
+          toast({
+            title: "Account created!",
+            description: "Welcome to Altera.",
+          });
+          navigate("/");
+        }
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
-        if (error) throw error;
+        if (signInError) throw signInError;
 
         toast({
           title: "Welcome back!",
           description: "You've successfully signed in.",
         });
-        navigate("/workspace");
-      } else {
-        const redirectUrl = `${window.location.origin}/workspace`;
-        
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: redirectUrl,
-            data: {
-              full_name: fullName,
-            },
-          },
-        });
-
-        if (error) throw error;
-
-        toast({
-          title: "Account created!",
-          description: "Welcome to Altera. Let's get started.",
-        });
-        navigate("/onboarding");
+        navigate("/");
       }
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "An error occurred during authentication.",
+        description: error.message || "Authentication failed",
       });
     } finally {
       setLoading(false);
@@ -85,37 +84,34 @@ const Auth = () => {
             Altera
           </h1>
           <p className="text-muted-foreground">
-            Your HR communication coach
+            This tool is provided by your company to help you practice work conversations
           </p>
         </div>
 
         <Card className="shadow-medium border-border/50">
           <CardHeader>
-            <CardTitle>{isLogin ? "Welcome back" : "Create your account"}</CardTitle>
+            <CardTitle>Welcome to Altera</CardTitle>
             <CardDescription>
-              {isLogin
-                ? "Sign in to continue your communication journey"
-                : "Start improving your workplace conversations"}
+              {isSignUp ? "Create your account to get started" : "Sign in to continue"}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAuth} className="space-y-4">
-              {!isLogin && (
+              {isSignUp && (
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="name">Name</Label>
                   <Input
-                    id="fullName"
+                    id="name"
                     type="text"
-                    placeholder="Jane Doe"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required={!isLogin}
+                    placeholder="Your name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                   />
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Work Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -139,23 +135,19 @@ const Auth = () => {
                 />
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? "Loading..." : isLogin ? "Sign in" : "Create account"}
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Loading..." : isSignUp ? "Create Account" : "Start"}
               </Button>
 
               <div className="text-center text-sm">
                 <button
                   type="button"
-                  onClick={() => setIsLogin(!isLogin)}
+                  onClick={() => setIsSignUp(!isSignUp)}
                   className="text-primary hover:underline"
                 >
-                  {isLogin
-                    ? "Don't have an account? Sign up"
-                    : "Already have an account? Sign in"}
+                  {isSignUp
+                    ? "Already have an account? Sign in"
+                    : "Need an account? Sign up"}
                 </button>
               </div>
             </form>

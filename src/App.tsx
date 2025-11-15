@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
+import Dashboard from "./pages/Dashboard";
 import Workspace from "./pages/Workspace";
 import ScenarioSetup from "./pages/ScenarioSetup";
 import PersonaCreate from "./pages/PersonaCreate";
@@ -24,6 +25,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/workspace" element={<Workspace />} />
           <Route path="/scenario/setup" element={<ScenarioSetup />} />

@@ -86,12 +86,48 @@ serve(async (req) => {
     const result = await response.json();
     const voiceId = result.voice_id;
 
-    // Save persona to database
+    // Create Conversational AI agent with the voice
+    const agentResponse = await fetch("https://api.elevenlabs.io/v1/convai/agents/create", {
+      method: "POST",
+      headers: {
+        "xi-api-key": ELEVENLABS_API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        conversation_config: {
+          agent: {
+            prompt: {
+              prompt: "You are a helpful AI communication coach assistant. Help users practice their communication skills in a supportive and constructive manner."
+            },
+            first_message: "Hello! I'm here to help you practice your communication skills. How can I assist you today?",
+            language: "en"
+          },
+          tts: {
+            voice_id: voiceId
+          }
+        }
+      }),
+    });
+
+    if (!agentResponse.ok) {
+      const errorText = await agentResponse.text();
+      console.error("ElevenLabs Agent API error:", agentResponse.status, errorText);
+      return new Response(
+        JSON.stringify({ error: "Failed to create agent with ElevenLabs" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const agentResult = await agentResponse.json();
+    const agentId = agentResult.agent_id;
+
+    // Save persona to database with both voice and agent IDs
     const { error: personaError } = await supabaseClient
       .from("ai_personas")
       .upsert({
         user_id: user.id,
         voice_profile_id: voiceId,
+        agent_id: agentId,
         status: "active",
         consent_given: true,
         consent_timestamp: new Date().toISOString(),
@@ -105,7 +141,7 @@ serve(async (req) => {
     }
     
     return new Response(
-      JSON.stringify({ voiceId, personaCreated: true }),
+      JSON.stringify({ voiceId, agentId, personaCreated: true }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

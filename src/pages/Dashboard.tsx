@@ -69,24 +69,47 @@ const Dashboard = () => {
 
     setIsPlayingTest(true);
     try {
-      const { data, error } = await supabase.functions.invoke("elevenlabs-tts", {
-        body: {
-          voiceId: persona.voice_profile_id,
-          text: "This is my AI voice speaking from Altera.",
-        },
-      });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Please log in to test your voice");
+        setIsPlayingTest(false);
+        return;
+      }
 
-      if (error) throw error;
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            voiceId: persona.voice_profile_id,
+            text: "This is my AI voice speaking from Altera.",
+          }),
+        }
+      );
 
-      const audioBlob = new Blob([Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))], { 
-        type: "audio/mpeg" 
-      });
+      if (!response.ok) {
+        throw new Error('Failed to generate speech');
+      }
+
+      const audioBuffer = await response.arrayBuffer();
+      const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       
       audio.onended = () => {
         setIsPlayingTest(false);
         URL.revokeObjectURL(audioUrl);
+      };
+
+      audio.onerror = () => {
+        setIsPlayingTest(false);
+        URL.revokeObjectURL(audioUrl);
+        toast.error("Failed to play audio");
       };
       
       await audio.play();

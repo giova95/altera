@@ -75,9 +75,14 @@ const ScenarioSetup = () => {
   };
 
   const handleStart = () => {
-    // In a real implementation, this would create a simulation and navigate to it
-    console.log({ selectedPersonaId, theme, emotion, context });
-    navigate("/simulation/demo");
+    // Navigate to voice call simulation with parameters
+    const params = new URLSearchParams({
+      personaId: selectedPersonaId!,
+      theme: theme!,
+      emotion: emotion!,
+      ...(context && { context }),
+    });
+    navigate(`/voice-call?${params.toString()}`);
   };
 
   return (

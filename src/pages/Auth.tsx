@@ -126,6 +126,7 @@ const Auth = () => {
                         <SelectItem value="manager">Manager</SelectItem>
                         <SelectItem value="leadership">C-Level</SelectItem>
                         <SelectItem value="hr">HR</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

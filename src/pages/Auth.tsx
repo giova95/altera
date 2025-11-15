@@ -39,14 +39,17 @@ const Auth = () => {
         if (signUpError) throw signUpError;
 
         if (authData.user) {
+          // Update profile since trigger already creates it
           const { error: profileError } = await supabase
             .from("profiles")
-            .insert({
+            .upsert({
               id: authData.user.id,
               email: email,
               full_name: name || email.split("@")[0],
               work_role: workRole,
               user_role: "standard",
+            }, {
+              onConflict: "id"
             });
 
           if (profileError) throw profileError;

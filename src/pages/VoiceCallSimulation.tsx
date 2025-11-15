@@ -45,22 +45,26 @@ const VoiceCallSimulation = () => {
         throw new Error("Not authenticated");
       }
 
-      // Get the persona to find the agent ID (voice_profile_id)
+      // Get the persona to find the agent ID
       const { data: persona, error: personaError } = await supabase
         .from("ai_personas")
-        .select("voice_profile_id")
+        .select("agent_id")
         .eq("id", personaId)
         .single();
 
-      if (personaError || !persona?.voice_profile_id) {
+      if (personaError) {
         throw new Error("Persona not found");
+      }
+
+      if (!persona?.agent_id) {
+        throw new Error("This persona doesn't have an ElevenLabs Conversational AI agent configured. Please set up an agent in ElevenLabs and add the agent ID to this persona.");
       }
 
       // Get signed URL from backend
       const { data: urlData, error: urlError } = await supabase.functions.invoke(
         "elevenlabs-get-signed-url",
         {
-          body: { agentId: persona.voice_profile_id },
+          body: { agentId: persona.agent_id },
         }
       );
 

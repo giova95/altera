@@ -16,15 +16,28 @@ const PersonaDemo = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkAuth();
+    checkAuthAndPersona();
   }, []);
 
-  const checkAuth = async () => {
+  const checkAuthAndPersona = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         navigate("/auth");
+        return;
+      }
+
+      // Check if user already has a persona
+      const { data: persona } = await supabase
+        .from("ai_personas")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .single();
+
+      // If they have a persona, redirect to dashboard
+      if (persona) {
+        navigate("/dashboard");
         return;
       }
     } catch (error) {

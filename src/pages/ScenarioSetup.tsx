@@ -17,6 +17,10 @@ interface AIPersona {
   voice_profile_id: string | null;
   user_id: string;
   consent_given: boolean;
+  profiles: {
+    full_name: string | null;
+    work_role: string | null;
+  } | null;
 }
 
 const ScenarioSetup = () => {
@@ -42,11 +46,18 @@ const ScenarioSetup = () => {
         return;
       }
 
-      // Get all personas with consent
+      // Get all personas with consent, excluding the current user's persona
       const { data, error } = await supabase
         .from("ai_personas")
-        .select("*")
-        .eq("consent_given", true);
+        .select(`
+          *,
+          profiles (
+            full_name,
+            work_role
+          )
+        `)
+        .eq("consent_given", true)
+        .neq("user_id", user.id);
 
       if (error) throw error;
 
@@ -121,23 +132,30 @@ const ScenarioSetup = () => {
                     value={selectedPersonaId || ""} 
                     onValueChange={(value) => setSelectedPersonaId(value)}
                   >
-                    {personas.map((persona) => (
-                      <div 
-                        key={persona.id}
-                        className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer"
-                      >
-                        <RadioGroupItem value={persona.id} id={`persona-${persona.id}`} />
-                        <Label 
-                          htmlFor={`persona-${persona.id}`} 
-                          className="cursor-pointer flex-1"
+                    {personas.map((persona) => {
+                      const ownerName = persona.profiles?.full_name || "Unknown User";
+                      const workRole = persona.profiles?.work_role 
+                        ? persona.profiles.work_role.split('_').map(word => 
+                            word.charAt(0).toUpperCase() + word.slice(1)
+                          ).join(' ')
+                        : "No role specified";
+                      
+                      return (
+                        <div 
+                          key={persona.id}
+                          className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer"
                         >
-                          <div className="font-medium">AI Persona</div>
-                          <div className="text-sm text-muted-foreground">
-                            Voice ID: {persona.voice_profile_id?.substring(0, 8)}...
-                          </div>
-                        </Label>
-                      </div>
-                    ))}
+                          <RadioGroupItem value={persona.id} id={`persona-${persona.id}`} />
+                          <Label 
+                            htmlFor={`persona-${persona.id}`} 
+                            className="cursor-pointer flex-1"
+                          >
+                            <div className="font-medium">{ownerName}</div>
+                            <div className="text-sm text-muted-foreground">{workRole}</div>
+                          </Label>
+                        </div>
+                      );
+                    })}
                   </RadioGroup>
 
                   <Button

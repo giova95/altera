@@ -61,18 +61,30 @@ const Auth = () => {
           navigate("/");
         }
       } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (signInError) throw signInError;
 
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully signed in.",
-        });
-        navigate("/");
+        // Check user role and redirect accordingly
+        if (signInData.user) {
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("user_role")
+            .eq("id", signInData.user.id)
+            .single();
+
+          const isAdminOrHR = profileData?.user_role === "admin" || profileData?.user_role === "hr";
+
+          toast({
+            title: "Welcome back!",
+            description: "You've successfully signed in.",
+          });
+          
+          navigate(isAdminOrHR ? "/admin/dashboard" : "/");
+        }
       }
     } catch (error: any) {
       toast({

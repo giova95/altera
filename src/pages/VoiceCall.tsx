@@ -119,8 +119,6 @@ const VoiceCall = () => {
         console.error("Error fetching conversation:", convError);
       }
 
-      console.log("Conversation data from ElevenLabs:", conversationData);
-
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
@@ -130,11 +128,9 @@ const VoiceCall = () => {
         .from("profiles")
         .select("work_role")
         .eq("id", user.id)
-        .maybeSingle();
+        .single();
 
       const state = location.state as any;
-
-      console.log("Creating simulation with state:", state);
 
       // Create simulation record
       const { data: simulation, error: simError } = await supabase
@@ -156,27 +152,20 @@ const VoiceCall = () => {
       if (simError) throw simError;
 
       // Store transcript messages if available
-      // ElevenLabs returns transcript in analysis.transcript_with_analyses array
-      if (conversationData?.analysis?.transcript_with_analyses) {
-        const messages = conversationData.analysis.transcript_with_analyses.map((item: any) => ({
+      if (conversationData?.transcript) {
+        const messages = conversationData.transcript.map((msg: any) => ({
           simulation_id: simulation.id,
-          role: item.role === "agent" ? "assistant" : "user",
-          content: item.text || item.message || "",
+          role: msg.role === "agent" ? "assistant" : "user",
+          content: msg.message,
         }));
 
-        if (messages.length > 0) {
-          const { error: msgError } = await supabase
-            .from("simulation_messages")
-            .insert(messages);
+        const { error: msgError } = await supabase
+          .from("simulation_messages")
+          .insert(messages);
 
-          if (msgError) {
-            console.error("Error saving messages:", msgError);
-          } else {
-            console.log(`Saved ${messages.length} messages to database`);
-          }
+        if (msgError) {
+          console.error("Error saving messages:", msgError);
         }
-      } else {
-        console.log("No transcript data found in conversation response");
       }
 
       toast({

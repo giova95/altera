@@ -75,7 +75,7 @@ export const DemoRecordingStep = ({ onContinue, onBack }: DemoRecordingStepProps
         .from('profiles')
         .select('full_name, work_role')
         .eq('id', session.user.id)
-        .maybeSingle();
+        .single();
 
       const userName = profile?.full_name || 'User';
 

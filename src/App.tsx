@@ -10,7 +10,6 @@ import Dashboard from "./pages/Dashboard";
 import Workspace from "./pages/Workspace";
 import ScenarioSetup from "./pages/ScenarioSetup";
 import VoiceCall from "./pages/VoiceCall";
-import SimulationDetail from "./pages/SimulationDetail";
 import PersonaCreate from "./pages/PersonaCreate";
 import PersonaDemo from "./pages/PersonaDemo";
 import PersonaManagement from "./pages/PersonaManagement";
@@ -32,7 +31,6 @@ const App = () => (
           <Route path="/workspace" element={<Workspace />} />
           <Route path="/scenario/setup" element={<ScenarioSetup />} />
           <Route path="/voice-call" element={<VoiceCall />} />
-          <Route path="/simulation/detail" element={<SimulationDetail />} />
           <Route path="/persona/create" element={<PersonaCreate />} />
           <Route path="/persona/demo" element={<PersonaDemo />} />
           <Route path="/persona/management" element={<PersonaManagement />} />

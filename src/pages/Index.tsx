@@ -24,7 +24,7 @@ const Index = () => {
         .from("ai_personas")
         .select("*")
         .eq("user_id", session.user.id)
-        .maybeSingle();
+        .single();
 
       if (!persona) {
         navigate("/persona/demo");

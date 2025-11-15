@@ -35,7 +35,7 @@ const Dashboard = () => {
         .from("profiles")
         .select("*")
         .eq("id", session.user.id)
-        .maybeSingle();
+        .single();
 
       setProfile(profileData);
 
@@ -44,7 +44,7 @@ const Dashboard = () => {
         .from("ai_personas")
         .select("*")
         .eq("user_id", session.user.id)
-        .maybeSingle();
+        .single();
 
       setPersona(personaData);
 
@@ -249,21 +249,14 @@ const Dashboard = () => {
                     <div 
                       key={sim.id} 
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors cursor-pointer"
-                      onClick={() => navigate(`/simulation/detail?id=${sim.id}`)}
+                      onClick={() => navigate(`/workspace?simulationId=${sim.id}`)}
                     >
                       <div>
                         <p className="font-medium capitalize">
-                          {sim.theme.replace(/_/g, " ")}
-                          {sim.is_using_persona && " (Voice)"}
+                          {sim.theme.replace(/_/g, " ")} - {sim.other_role.replace(/_/g, " ")}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(sim.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
+                          {new Date(sim.created_at).toLocaleDateString()}
                         </p>
                       </div>
                       <Button variant="ghost" size="sm">View</Button>

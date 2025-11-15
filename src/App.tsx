@@ -29,7 +29,6 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/scenario/setup" element={<ScenarioSetup />} />
           <Route path="/voice-call" element={<VoiceCall />} />
           <Route path="/persona/create" element={<PersonaCreate />} />

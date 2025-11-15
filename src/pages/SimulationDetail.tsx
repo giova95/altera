@@ -40,7 +40,7 @@ const SimulationDetail = () => {
         .select("*")
         .eq("id", simulationId)
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (simError) throw simError;
       setSimulation(simData);

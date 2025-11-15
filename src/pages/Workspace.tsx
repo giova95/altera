@@ -10,8 +10,6 @@ const Workspace = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [persona, setPersona] = useState<any>(null);
-  const [simulations, setSimulations] = useState<any[]>([]);
-  const [loadingSimulations, setLoadingSimulations] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,51 +34,10 @@ const Workspace = () => {
         .eq("user_id", user.id)
         .single();
       setPersona(personaData);
-
-      // Fetch recent simulations with conversation data
-      await fetchSimulations(user.id);
     };
 
     getUser();
   }, [navigate]);
-
-  const fetchSimulations = async (userId: string) => {
-    setLoadingSimulations(true);
-    try {
-      const { data: simulationsData } = await supabase
-        .from("simulations")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(5);
-
-      if (simulationsData) {
-        // Fetch conversation data for each simulation
-        const enrichedSimulations = await Promise.all(
-          simulationsData.map(async (sim) => {
-            if (sim.conversation_id) {
-              try {
-                const { data: conversationData } = await supabase.functions.invoke(
-                  "elevenlabs-conversation",
-                  { body: { conversationId: sim.conversation_id } }
-                );
-                return { ...sim, conversationData };
-              } catch (error) {
-                console.error("Error fetching conversation:", error);
-                return sim;
-              }
-            }
-            return sim;
-          })
-        );
-        setSimulations(enrichedSimulations);
-      }
-    } catch (error) {
-      console.error("Error fetching simulations:", error);
-    } finally {
-      setLoadingSimulations(false);
-    }
-  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -224,44 +181,10 @@ const Workspace = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {loadingSimulations ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p className="text-sm">Loading...</p>
-                </div>
-              ) : simulations.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p className="text-sm">No simulations yet</p>
-                  <p className="text-xs mt-1">Start your first conversation above</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {simulations.map((sim) => (
-                    <div key={sim.id} className="border border-border/50 rounded-lg p-4 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="outline">{sim.theme}</Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(sim.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                      {sim.context && (
-                        <p className="text-sm text-foreground">{sim.context}</p>
-                      )}
-                      {sim.conversationData?.analysis?.transcript && (
-                        <div className="space-y-2 mt-3">
-                          <h4 className="text-xs font-semibold text-foreground">Transcription</h4>
-                          <p className="text-xs text-muted-foreground">{sim.conversationData.analysis.transcript}</p>
-                        </div>
-                      )}
-                      {sim.conversationData?.analysis?.summary && (
-                        <div className="space-y-2 mt-3">
-                          <h4 className="text-xs font-semibold text-foreground">Summary</h4>
-                          <p className="text-xs text-muted-foreground">{sim.conversationData.analysis.summary}</p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-sm">No simulations yet</p>
+                <p className="text-xs mt-1">Start your first conversation above</p>
+              </div>
             </CardContent>
           </Card>
         </div>

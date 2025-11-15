@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2, LogOut, Mic, PlayCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -15,7 +14,6 @@ const Dashboard = () => {
   const [persona, setPersona] = useState<any>(null);
   const [isPlayingTest, setIsPlayingTest] = useState(false);
   const [simulations, setSimulations] = useState<any[]>([]);
-  const [loadingSimulations, setLoadingSimulations] = useState(false);
 
   useEffect(() => {
     loadUserData();
@@ -50,50 +48,19 @@ const Dashboard = () => {
 
       setPersona(personaData);
 
-      // Load recent simulations with conversation data
-      await fetchSimulations(session.user.id);
+      // Load recent simulations
+      const { data: simulationsData } = await supabase
+        .from("simulations")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      setSimulations(simulationsData || []);
     } catch (error) {
       console.error("Error loading user data:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchSimulations = async (userId: string) => {
-    setLoadingSimulations(true);
-    try {
-      const { data: simulationsData } = await supabase
-        .from("simulations")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(5);
-
-      if (simulationsData) {
-        // Fetch conversation data for each simulation
-        const enrichedSimulations = await Promise.all(
-          simulationsData.map(async (sim) => {
-            if (sim.conversation_id) {
-              try {
-                const { data: conversationData } = await supabase.functions.invoke(
-                  "elevenlabs-conversation",
-                  { body: { conversationId: sim.conversation_id } }
-                );
-                return { ...sim, conversationData };
-              } catch (error) {
-                console.error("Error fetching conversation:", error);
-                return sim;
-              }
-            }
-            return sim;
-          })
-        );
-        setSimulations(enrichedSimulations);
-      }
-    } catch (error) {
-      console.error("Error fetching simulations:", error);
-    } finally {
-      setLoadingSimulations(false);
     }
   };
 
@@ -272,49 +239,27 @@ const Dashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {loadingSimulations ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
-                  <p className="text-sm">Loading simulations...</p>
-                </div>
-              ) : simulations.length === 0 ? (
+              {simulations.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   You haven't run any simulations yet.
                 </p>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {simulations.map((sim) => (
                     <div 
                       key={sim.id} 
-                      className="border border-border/50 rounded-lg p-4 space-y-3"
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors cursor-pointer"
+                      onClick={() => navigate(`/workspace?simulationId=${sim.id}`)}
                     >
-                      <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="capitalize">
-                          {sim.theme.replace(/_/g, " ")}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
+                      <div>
+                        <p className="font-medium capitalize">
+                          {sim.theme.replace(/_/g, " ")} - {sim.other_role.replace(/_/g, " ")}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
                           {new Date(sim.created_at).toLocaleDateString()}
-                        </span>
+                        </p>
                       </div>
-                      {sim.context && (
-                        <p className="text-sm text-foreground">{sim.context}</p>
-                      )}
-                      {sim.conversationData?.analysis?.summary && (
-                        <div className="space-y-2">
-                          <h4 className="text-xs font-semibold text-foreground">Summary</h4>
-                          <p className="text-xs text-muted-foreground">
-                            {sim.conversationData.analysis.summary}
-                          </p>
-                        </div>
-                      )}
-                      {sim.conversationData?.analysis?.transcript && (
-                        <div className="space-y-2">
-                          <h4 className="text-xs font-semibold text-foreground">Transcription</h4>
-                          <p className="text-xs text-muted-foreground line-clamp-3">
-                            {sim.conversationData.analysis.transcript}
-                          </p>
-                        </div>
-                      )}
+                      <Button variant="ghost" size="sm">View</Button>
                     </div>
                   ))}
                 </div>

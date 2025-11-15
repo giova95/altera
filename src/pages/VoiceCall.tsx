@@ -101,70 +101,13 @@ const VoiceCall = () => {
   };
 
   const handleCallEnd = async () => {
-    console.log("=== CALL END STARTED ===");
-    console.log("Conversation ID:", conversationId);
-    
     if (!conversationId) {
-      console.log("No conversation ID, navigating to workspace");
       navigate("/workspace");
       return;
     }
 
     try {
-      // Get current user first
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
-        throw new Error(`User fetch failed: ${userError?.message || "No user found"}`);
-      }
-      console.log("User ID:", user.id);
-
-      // Get user's profile to get work_role
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("work_role")
-        .eq("id", user.id)
-        .single();
-      
-      if (profileError) {
-        console.error("Profile fetch error:", profileError);
-      }
-      console.log("User work_role:", profile?.work_role);
-
-      const state = location.state as any;
-      console.log("Location state:", state);
-
-      // Create simulation record with conversation_id
-      const simulationData = {
-        user_id: user.id,
-        persona_id: state?.personaId || null,
-        theme: (state?.theme || "other") as "feedback" | "performance" | "conflict" | "workload" | "change_decision" | "other",
-        emotion: (state?.emotion || null) as "anxious" | "guilty" | "frustrated" | "calm_unsure" | "confident" | "other" | null,
-        context: state?.context || "",
-        user_role: (profile?.work_role || "other") as "individual_contributor" | "manager" | "hr" | "leadership" | "other",
-        other_role: "other" as "individual_contributor" | "manager" | "hr" | "leadership" | "other",
-        is_using_persona: true,
-        conversation_id: conversationId,
-        completed_at: new Date().toISOString(),
-      };
-      console.log("Creating simulation with data:", simulationData);
-
-      const { data: simulation, error: simError } = await supabase
-        .from("simulations")
-        .insert(simulationData)
-        .select()
-        .single();
-
-      if (simError) {
-        console.error("Simulation insert error:", simError);
-        throw simError;
-      }
-      console.log("Simulation created:", simulation);
-
-      // Wait a bit for ElevenLabs to process the conversation
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
       // Fetch conversation data from ElevenLabs
-      console.log("Fetching conversation data from ElevenLabs...");
       const { data: conversationData, error: convError } = await supabase.functions.invoke(
         "elevenlabs-conversation",
         {
@@ -174,35 +117,57 @@ const VoiceCall = () => {
 
       if (convError) {
         console.error("Error fetching conversation:", convError);
-      } else {
-        console.log("Conversation data received:", conversationData);
       }
 
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
+      // Get user's profile to get work_role
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("work_role")
+        .eq("id", user.id)
+        .single();
+
+      const state = location.state as any;
+
+      // Create simulation record
+      const { data: simulation, error: simError } = await supabase
+        .from("simulations")
+        .insert({
+          user_id: user.id,
+          persona_id: state?.personaId || null,
+          theme: state?.theme || "other",
+          emotion: state?.emotion || null,
+          context: state?.context || "",
+          user_role: profile?.work_role || "other",
+          other_role: "other",
+          is_using_persona: true,
+          completed_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (simError) throw simError;
+
       // Store transcript messages if available
-      if (conversationData?.transcript && Array.isArray(conversationData.transcript)) {
-        console.log("Processing transcript with", conversationData.transcript.length, "messages");
-        
+      if (conversationData?.transcript) {
         const messages = conversationData.transcript.map((msg: any) => ({
           simulation_id: simulation.id,
           role: msg.role === "agent" ? "assistant" : "user",
-          content: msg.message || msg.text || "",
+          content: msg.message,
         }));
 
-        console.log("Inserting messages:", messages);
         const { error: msgError } = await supabase
           .from("simulation_messages")
           .insert(messages);
 
         if (msgError) {
           console.error("Error saving messages:", msgError);
-        } else {
-          console.log("Messages saved successfully");
         }
-      } else {
-        console.log("No transcript data available");
       }
 
-      console.log("=== CALL END COMPLETED SUCCESSFULLY ===");
       toast({
         title: "Call ended",
         description: "Conversation saved successfully",
@@ -210,11 +175,10 @@ const VoiceCall = () => {
 
       navigate("/workspace");
     } catch (error) {
-      console.error("=== ERROR SAVING CONVERSATION ===");
-      console.error("Error details:", error);
+      console.error("Error saving conversation:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save conversation",
+        description: "Failed to save conversation",
         variant: "destructive",
       });
       navigate("/workspace");

@@ -171,7 +171,6 @@ export type Database = {
         Row: {
           completed_at: string | null
           context: string | null
-          conversation_id: string | null
           created_at: string
           emotion: Database["public"]["Enums"]["emotion"] | null
           id: string
@@ -185,7 +184,6 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           context?: string | null
-          conversation_id?: string | null
           created_at?: string
           emotion?: Database["public"]["Enums"]["emotion"] | null
           id?: string
@@ -199,7 +197,6 @@ export type Database = {
         Update: {
           completed_at?: string | null
           context?: string | null
-          conversation_id?: string | null
           created_at?: string
           emotion?: Database["public"]["Enums"]["emotion"] | null
           id?: string

@@ -74,10 +74,44 @@ const ScenarioSetup = () => {
     }
   };
 
-  const handleStart = () => {
-    // In a real implementation, this would create a simulation and navigate to it
-    console.log({ selectedPersonaId, theme, emotion, context });
-    navigate("/simulation/demo");
+  const handleStart = async () => {
+    if (!selectedPersonaId) return;
+
+    try {
+      // Get the selected persona's agent_id
+      const { data: persona } = await supabase
+        .from("ai_personas")
+        .select("agent_id")
+        .eq("id", selectedPersonaId)
+        .single();
+
+      if (!persona?.agent_id) {
+        toast({
+          title: "Error",
+          description: "Selected persona does not have an agent configured",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Navigate to voice call with all the setup data
+      navigate("/voice-call", {
+        state: {
+          agentId: persona.agent_id,
+          personaId: selectedPersonaId,
+          theme,
+          emotion,
+          context,
+        },
+      });
+    } catch (error) {
+      console.error("Error starting simulation:", error);
+      toast({
+        title: "Error",
+        description: "Failed to start voice call",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

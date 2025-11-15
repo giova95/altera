@@ -9,6 +9,7 @@ import Onboarding from "./pages/Onboarding";
 import Workspace from "./pages/Workspace";
 import ScenarioSetup from "./pages/ScenarioSetup";
 import PersonaCreate from "./pages/PersonaCreate";
+import PersonaDemo from "./pages/PersonaDemo";
 import PersonaManagement from "./pages/PersonaManagement";
 import NotFound from "./pages/NotFound";
 

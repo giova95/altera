@@ -25,21 +25,20 @@ const PersonaManagement = () => {
       }
       setUser(user);
 
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      // Fetch roles from secure roles table (RLS-protected)
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
 
-      if (!profileData) {
-        navigate('/workspace');
-        return;
+      if (rolesError) {
+        console.error('Failed to load roles', rolesError);
       }
 
-      setProfile(profileData);
+      const isHrOrAdmin = (roles || []).some((r: any) => r.role === 'hr' || r.role === 'admin');
 
-      // Check if user is HR or admin
-      if (profileData.user_role !== 'hr' && profileData.user_role !== 'admin') {
+      // Optional UX redirect. Data access is enforced server-side via RLS.
+      if (!isHrOrAdmin) {
         navigate('/workspace');
         return;
       }

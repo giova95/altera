@@ -119,6 +119,8 @@ const VoiceCall = () => {
         console.error("Error fetching conversation:", convError);
       }
 
+      console.log("Conversation data from ElevenLabs:", conversationData);
+
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
@@ -152,20 +154,27 @@ const VoiceCall = () => {
       if (simError) throw simError;
 
       // Store transcript messages if available
-      if (conversationData?.transcript) {
-        const messages = conversationData.transcript.map((msg: any) => ({
+      // ElevenLabs returns transcript in analysis.transcript_with_analyses array
+      if (conversationData?.analysis?.transcript_with_analyses) {
+        const messages = conversationData.analysis.transcript_with_analyses.map((item: any) => ({
           simulation_id: simulation.id,
-          role: msg.role === "agent" ? "assistant" : "user",
-          content: msg.message,
+          role: item.role === "agent" ? "assistant" : "user",
+          content: item.text || item.message || "",
         }));
 
-        const { error: msgError } = await supabase
-          .from("simulation_messages")
-          .insert(messages);
+        if (messages.length > 0) {
+          const { error: msgError } = await supabase
+            .from("simulation_messages")
+            .insert(messages);
 
-        if (msgError) {
-          console.error("Error saving messages:", msgError);
+          if (msgError) {
+            console.error("Error saving messages:", msgError);
+          } else {
+            console.log(`Saved ${messages.length} messages to database`);
+          }
         }
+      } else {
+        console.log("No transcript data found in conversation response");
       }
 
       toast({

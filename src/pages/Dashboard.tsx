@@ -249,14 +249,21 @@ const Dashboard = () => {
                     <div 
                       key={sim.id} 
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors cursor-pointer"
-                      onClick={() => navigate(`/workspace?simulationId=${sim.id}`)}
+                      onClick={() => navigate(`/simulation/detail?id=${sim.id}`)}
                     >
                       <div>
                         <p className="font-medium capitalize">
-                          {sim.theme.replace(/_/g, " ")} - {sim.other_role.replace(/_/g, " ")}
+                          {sim.theme.replace(/_/g, " ")}
+                          {sim.is_using_persona && " (Voice)"}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(sim.created_at).toLocaleDateString()}
+                          {new Date(sim.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
                         </p>
                       </div>
                       <Button variant="ghost" size="sm">View</Button>

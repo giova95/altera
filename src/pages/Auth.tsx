@@ -103,7 +103,7 @@ const Auth = () => {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">Altera</h1>
           <p className="text-muted-foreground">
-            This tool is provided by your company to help you practice work conversations
+            Master difficult conversations with AI-powered practice. Build confidence in real workplace scenarios.
           </p>
         </div>
 

@@ -91,11 +91,19 @@ export const DemoRecordingStep = ({ onContinue, onBack }: DemoRecordingStepProps
 
       console.log("Voice created:", voiceData.voiceId);
 
-      // Step 2: Create conversational AI agent with this voice
+      // Get user's profile to get work role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('work_role')
+        .eq('id', session.user.id)
+        .single();
+
+      // Step 2: Create conversational AI agent with this voice and user's role
       const { data: agentData, error: agentError } = await supabase.functions.invoke('elevenlabs-create-agent', {
         body: {
           voiceId: voiceData.voiceId,
           name: 'Demo Persona Agent',
+          workRole: profile?.work_role || 'other',
         },
       });
 

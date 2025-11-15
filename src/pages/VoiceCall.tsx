@@ -132,7 +132,7 @@ const VoiceCall = () => {
 
       const state = location.state as any;
 
-      // Create simulation record
+      // Create simulation record with conversation_id
       const { data: simulation, error: simError } = await supabase
         .from("simulations")
         .insert({
@@ -144,6 +144,7 @@ const VoiceCall = () => {
           user_role: profile?.work_role || "other",
           other_role: "other",
           is_using_persona: true,
+          conversation_id: conversationId,
           completed_at: new Date().toISOString(),
         })
         .select()

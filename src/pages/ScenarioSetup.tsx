@@ -1,28 +1,71 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2, User } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-type WorkRole = "individual_contributor" | "manager" | "hr" | "leadership" | "other";
 type Theme = "feedback" | "performance" | "conflict" | "workload" | "change_decision" | "other";
 type Emotion = "anxious" | "guilty" | "frustrated" | "calm_unsure" | "confident" | "other";
 
+interface AIPersona {
+  id: string;
+  voice_profile_id: string | null;
+  user_id: string;
+  consent_given: boolean;
+}
+
 const ScenarioSetup = () => {
   const [step, setStep] = useState(1);
-  const [userRole, setUserRole] = useState<WorkRole | null>(null);
-  const [otherRole, setOtherRole] = useState<WorkRole | null>(null);
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
+  const [personas, setPersonas] = useState<AIPersona[]>([]);
+  const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState<Theme | null>(null);
   const [emotion, setEmotion] = useState<Emotion | null>(null);
   const [context, setContext] = useState("");
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadPersonas();
+  }, []);
+
+  const loadPersonas = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+
+      // Get all personas with consent
+      const { data, error } = await supabase
+        .from("ai_personas")
+        .select("*")
+        .eq("consent_given", true);
+
+      if (error) throw error;
+
+      setPersonas(data || []);
+    } catch (error) {
+      console.error("Error loading personas:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load AI personas",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleStart = () => {
     // In a real implementation, this would create a simulation and navigate to it
-    console.log({ userRole, otherRole, theme, emotion, context });
+    console.log({ selectedPersonaId, theme, emotion, context });
     navigate("/simulation/demo");
   };
 
@@ -45,112 +88,72 @@ const ScenarioSetup = () => {
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">Set up your scenario</h2>
           <p className="text-muted-foreground">
-            Step {step} of 4
+            Step {step} of 3
           </p>
         </div>
 
         {step === 1 && (
           <Card className="shadow-medium">
             <CardHeader>
-              <CardTitle>In this scenario, I am...</CardTitle>
+              <CardTitle>Choose an AI persona to practice with</CardTitle>
               <CardDescription>
-                Select your role in this conversation
+                Select which AI persona you want to have a conversation with
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <RadioGroup value={userRole || ""} onValueChange={(value) => setUserRole(value as WorkRole)}>
-                <div className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
-                  <RadioGroupItem value="individual_contributor" id="user-ic" />
-                  <Label htmlFor="user-ic" className="cursor-pointer flex-1 font-medium">
-                    Individual Contributor
-                  </Label>
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
-                <div className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
-                  <RadioGroupItem value="manager" id="user-manager" />
-                  <Label htmlFor="user-manager" className="cursor-pointer flex-1 font-medium">
-                    Manager
-                  </Label>
+              ) : personas.length === 0 ? (
+                <div className="text-center py-8">
+                  <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-muted-foreground mb-4">
+                    No AI personas available yet
+                  </p>
+                  <Button onClick={() => navigate("/persona/demo")}>
+                    Create your first persona
+                  </Button>
                 </div>
-                <div className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
-                  <RadioGroupItem value="hr" id="user-hr" />
-                  <Label htmlFor="user-hr" className="cursor-pointer flex-1 font-medium">
-                    HR Professional
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer">
-                  <RadioGroupItem value="leadership" id="user-leadership" />
-                  <Label htmlFor="user-leadership" className="cursor-pointer flex-1 font-medium">
-                    Leadership
-                  </Label>
-                </div>
-              </RadioGroup>
+              ) : (
+                <>
+                  <RadioGroup 
+                    value={selectedPersonaId || ""} 
+                    onValueChange={(value) => setSelectedPersonaId(value)}
+                  >
+                    {personas.map((persona) => (
+                      <div 
+                        key={persona.id}
+                        className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer"
+                      >
+                        <RadioGroupItem value={persona.id} id={`persona-${persona.id}`} />
+                        <Label 
+                          htmlFor={`persona-${persona.id}`} 
+                          className="cursor-pointer flex-1"
+                        >
+                          <div className="font-medium">AI Persona</div>
+                          <div className="text-sm text-muted-foreground">
+                            Voice ID: {persona.voice_profile_id?.substring(0, 8)}...
+                          </div>
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
 
-              <Button
-                onClick={() => setStep(2)}
-                disabled={!userRole}
-                className="w-full"
-              >
-                Continue
-              </Button>
+                  <Button
+                    onClick={() => setStep(2)}
+                    disabled={!selectedPersonaId}
+                    className="w-full"
+                  >
+                    Continue
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
         )}
 
         {step === 2 && (
-          <Card className="shadow-medium">
-            <CardHeader>
-              <CardTitle>I need to talk to...</CardTitle>
-              <CardDescription>
-                Who is the other person in this conversation?
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <RadioGroup value={otherRole || ""} onValueChange={(value) => setOtherRole(value as WorkRole)}>
-                <div className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-accent transition-colors cursor-pointer">
-                  <RadioGroupItem value="manager" id="other-manager" />
-                  <Label htmlFor="other-manager" className="cursor-pointer flex-1 font-medium">
-                    My Manager
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-accent transition-colors cursor-pointer">
-                  <RadioGroupItem value="individual_contributor" id="other-report" />
-                  <Label htmlFor="other-report" className="cursor-pointer flex-1 font-medium">
-                    My Direct Report
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-accent transition-colors cursor-pointer">
-                  <RadioGroupItem value="individual_contributor" id="other-peer" />
-                  <Label htmlFor="other-peer" className="cursor-pointer flex-1 font-medium">
-                    A Peer / Colleague
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-accent transition-colors cursor-pointer">
-                  <RadioGroupItem value="hr" id="other-hr" />
-                  <Label htmlFor="other-hr" className="cursor-pointer flex-1 font-medium">
-                    HR
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-accent transition-colors cursor-pointer">
-                  <RadioGroupItem value="leadership" id="other-leadership" />
-                  <Label htmlFor="other-leadership" className="cursor-pointer flex-1 font-medium">
-                    Leadership
-                  </Label>
-                </div>
-              </RadioGroup>
-
-              <div className="flex gap-2">
-                <Button onClick={() => setStep(1)} variant="outline" className="flex-1">
-                  Back
-                </Button>
-                <Button onClick={() => setStep(3)} disabled={!otherRole} className="flex-1">
-                  Continue
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {step === 3 && (
           <Card className="shadow-medium">
             <CardHeader>
               <CardTitle>What's the theme?</CardTitle>
@@ -193,10 +196,10 @@ const ScenarioSetup = () => {
               </RadioGroup>
 
               <div className="flex gap-2">
-                <Button onClick={() => setStep(2)} variant="outline" className="flex-1">
+                <Button onClick={() => setStep(1)} variant="outline" className="flex-1">
                   Back
                 </Button>
-                <Button onClick={() => setStep(4)} disabled={!theme} className="flex-1">
+                <Button onClick={() => setStep(3)} disabled={!theme} className="flex-1">
                   Continue
                 </Button>
               </div>
@@ -204,7 +207,7 @@ const ScenarioSetup = () => {
           </Card>
         )}
 
-        {step === 4 && (
+        {step === 3 && (
           <Card className="shadow-medium">
             <CardHeader>
               <CardTitle>How are you feeling?</CardTitle>
@@ -252,7 +255,7 @@ const ScenarioSetup = () => {
               </div>
 
               <div className="flex gap-2">
-                <Button onClick={() => setStep(3)} variant="outline" className="flex-1">
+                <Button onClick={() => setStep(2)} variant="outline" className="flex-1">
                   Back
                 </Button>
                 <Button onClick={handleStart} disabled={!emotion} className="flex-1">

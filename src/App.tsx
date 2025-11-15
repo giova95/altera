@@ -4,15 +4,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
-import PersonaCreate from "./pages/PersonaCreate";
-import PersonaManagement from "./pages/PersonaManagement";
 import Workspace from "./pages/Workspace";
 import ScenarioSetup from "./pages/ScenarioSetup";
-import VoiceCallSimulation from "./pages/VoiceCallSimulation";
+import PersonaCreate from "./pages/PersonaCreate";
+import PersonaDemo from "./pages/PersonaDemo";
+import PersonaManagement from "./pages/PersonaManagement";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -25,13 +25,14 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/persona/create" element={<PersonaCreate />} />
-          <Route path="/persona/management" element={<PersonaManagement />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/workspace" element={<Workspace />} />
           <Route path="/scenario/setup" element={<ScenarioSetup />} />
-          <Route path="/voice-call" element={<VoiceCallSimulation />} />
+          <Route path="/persona/create" element={<PersonaCreate />} />
+          <Route path="/persona/demo" element={<PersonaDemo />} />
+          <Route path="/persona/management" element={<PersonaManagement />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

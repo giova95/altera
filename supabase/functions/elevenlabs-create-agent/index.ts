@@ -58,7 +58,7 @@ serve(async (req) => {
 
     console.log("Creating ElevenLabs agent with voice:", voiceId);
 
-    // Create conversational AI agent
+    // Create conversational AI agent with the specified voice
     const agentPayload = {
       conversation_config: conversationConfig || {
         agent: {
@@ -68,6 +68,9 @@ serve(async (req) => {
           first_message: "Hello! I'm ready to help you practice this conversation.",
           language: "en",
         },
+        tts: {
+          voice_id: voiceId,
+        },
       },
       platform_settings: {
         widget: {
@@ -76,7 +79,6 @@ serve(async (req) => {
         },
       },
       name: name || "AI Persona Agent",
-      voice_id: voiceId,
     };
 
     const response = await fetch("https://api.elevenlabs.io/v1/convai/agents/create", {

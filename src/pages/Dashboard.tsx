@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2, LogOut, Mic, PlayCircle } from "lucide-react";
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -14,48 +13,40 @@ const Dashboard = () => {
   const [persona, setPersona] = useState<any>(null);
   const [isPlayingTest, setIsPlayingTest] = useState(false);
   const [simulations, setSimulations] = useState<any[]>([]);
-
   useEffect(() => {
     loadUserData();
   }, []);
-
   const loadUserData = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       if (!session) {
         navigate("/auth");
         return;
       }
-
       setUser(session.user);
 
       // Load profile
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-
+      const {
+        data: profileData
+      } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
       setProfile(profileData);
 
       // Load persona
-      const { data: personaData } = await supabase
-        .from("ai_personas")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .single();
-
+      const {
+        data: personaData
+      } = await supabase.from("ai_personas").select("*").eq("user_id", session.user.id).single();
       setPersona(personaData);
 
       // Load recent simulations
-      const { data: simulationsData } = await supabase
-        .from("simulations")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .order("created_at", { ascending: false })
-        .limit(5);
-
+      const {
+        data: simulationsData
+      } = await supabase.from("simulations").select("*").eq("user_id", session.user.id).order("created_at", {
+        ascending: false
+      }).limit(5);
       setSimulations(simulationsData || []);
     } catch (error) {
       console.error("Error loading user data:", error);
@@ -63,55 +54,50 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
-
   const handlePlayTestVoice = async () => {
     if (!persona?.voice_profile_id) return;
-
     setIsPlayingTest(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       if (!session) {
         toast.error("Please log in to test your voice");
         setIsPlayingTest(false);
         return;
       }
-
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          },
-          body: JSON.stringify({
-            voiceId: persona.voice_profile_id,
-            text: "This is my AI voice speaking from Altera.",
-          }),
-        }
-      );
-
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+        },
+        body: JSON.stringify({
+          voiceId: persona.voice_profile_id,
+          text: "This is my AI voice speaking from Altera."
+        })
+      });
       if (!response.ok) {
         throw new Error('Failed to generate speech');
       }
-
       const audioBuffer = await response.arrayBuffer();
-      const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+      const audioBlob = new Blob([audioBuffer], {
+        type: 'audio/mpeg'
+      });
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
-      
       audio.onended = () => {
         setIsPlayingTest(false);
         URL.revokeObjectURL(audioUrl);
       };
-
       audio.onerror = () => {
         setIsPlayingTest(false);
         URL.revokeObjectURL(audioUrl);
         toast.error("Failed to play audio");
       };
-      
       await audio.play();
     } catch (error) {
       console.error("Error playing test voice:", error);
@@ -119,33 +105,28 @@ const Dashboard = () => {
       setIsPlayingTest(false);
     }
   };
-
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
   };
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+      </div>;
   }
-
   const getRoleName = (workRole: string) => {
-    const roleMap: { [key: string]: string } = {
+    const roleMap: {
+      [key: string]: string;
+    } = {
       individual_contributor: "Employee",
       manager: "Manager",
       hr: "HR",
       leadership: "Leadership",
-      other: "Other",
+      other: "Other"
     };
     return roleMap[workRole] || "Employee";
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted p-4 md:p-8">
+  return <div className="min-h-screen bg-gradient-to-br from-background to-muted p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -175,39 +156,27 @@ const Dashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {persona ? (
-                <>
+              {persona ? <>
                   <p className="text-sm text-muted-foreground">
                     This AI voice is based on your short recording and is used in simulations.
                   </p>
-                  <Button 
-                    onClick={handlePlayTestVoice} 
-                    disabled={isPlayingTest}
-                    className="w-full"
-                  >
-                    {isPlayingTest ? (
-                      <>
+                  <Button onClick={handlePlayTestVoice} disabled={isPlayingTest} className="w-full">
+                    {isPlayingTest ? <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         Playing...
-                      </>
-                    ) : (
-                      <>
+                      </> : <>
                         <PlayCircle className="h-4 w-4 mr-2" />
                         Play Test Voice
-                      </>
-                    )}
+                      </>}
                   </Button>
-                </>
-              ) : (
-                <>
+                </> : <>
                   <p className="text-sm text-muted-foreground">
                     You don't have an AI persona yet.
                   </p>
                   <Button onClick={() => navigate("/persona/demo")} className="w-full">
                     Create My AI Persona
                   </Button>
-                </>
-              )}
+                </>}
             </CardContent>
           </Card>
 
@@ -220,56 +189,16 @@ const Dashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button 
-                onClick={() => navigate("/scenario/setup")} 
-                className="w-full"
-                variant="default"
-              >
+              <Button onClick={() => navigate("/scenario/setup")} variant="default" className="w-full my-[36px]">
                 New Simulation
               </Button>
             </CardContent>
           </Card>
 
           {/* Recent Simulations */}
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle>Recent Simulations</CardTitle>
-              <CardDescription>
-                Your conversation practice history
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {simulations.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  You haven't run any simulations yet.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {simulations.map((sim) => (
-                    <div 
-                      key={sim.id} 
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors cursor-pointer"
-                      onClick={() => navigate(`/workspace?simulationId=${sim.id}`)}
-                    >
-                      <div>
-                        <p className="font-medium capitalize">
-                          {sim.theme.replace(/_/g, " ")} - {sim.other_role.replace(/_/g, " ")}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(sim.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Button variant="ghost" size="sm">View</Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Dashboard;

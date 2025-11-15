@@ -27,6 +27,7 @@ const App = () => (
           <Route path="/workspace" element={<Workspace />} />
           <Route path="/scenario/setup" element={<ScenarioSetup />} />
           <Route path="/persona/create" element={<PersonaCreate />} />
+          <Route path="/persona/demo" element={<PersonaDemo />} />
           <Route path="/persona/management" element={<PersonaManagement />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

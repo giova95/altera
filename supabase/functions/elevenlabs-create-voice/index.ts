@@ -32,8 +32,12 @@ serve(async (req) => {
 
     // Get current user
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      throw new Error("Unauthorized");
+    if (userError) {
+      console.error("Auth error:", userError);
+      throw new Error("Unauthorized: " + userError.message);
+    }
+    if (!user) {
+      throw new Error("Unauthorized: No user found");
     }
 
     const formData = await req.formData();

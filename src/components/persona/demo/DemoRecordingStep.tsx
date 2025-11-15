@@ -64,6 +64,12 @@ export const DemoRecordingStep = ({ onContinue, onBack }: DemoRecordingStepProps
     setIsUploading(true);
     
     try {
+      // Get the current session to ensure we have a valid auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("You must be logged in to create a voice");
+      }
+
       const formData = new FormData();
       formData.append('audio', audioBlob, 'demo-voice.webm');
       formData.append('displayName', 'Demo Persona');

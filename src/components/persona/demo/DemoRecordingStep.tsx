@@ -70,10 +70,19 @@ export const DemoRecordingStep = ({ onContinue, onBack }: DemoRecordingStepProps
         throw new Error("You must be logged in to create a voice");
       }
 
+      // Get user's profile for name and work role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, work_role')
+        .eq('id', session.user.id)
+        .single();
+
+      const userName = profile?.full_name || 'User';
+
       const formData = new FormData();
       formData.append('audio', audioBlob, 'demo-voice.webm');
-      formData.append('displayName', 'Demo Persona');
-      formData.append('description', 'Demo voice for Altera communication coach.');
+      formData.append('displayName', userName);
+      formData.append('description', `AI voice persona for ${userName} - Altera communication coach.`);
 
       // Step 1: Create voice in ElevenLabs
       const { data: voiceData, error: voiceError } = await supabase.functions.invoke('elevenlabs-create-voice', {
@@ -91,18 +100,11 @@ export const DemoRecordingStep = ({ onContinue, onBack }: DemoRecordingStepProps
 
       console.log("Voice created:", voiceData.voiceId);
 
-      // Get user's profile to get work role
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('work_role')
-        .eq('id', session.user.id)
-        .single();
-
       // Step 2: Create conversational AI agent with this voice and user's role
       const { data: agentData, error: agentError } = await supabase.functions.invoke('elevenlabs-create-agent', {
         body: {
           voiceId: voiceData.voiceId,
-          name: 'Demo Persona Agent',
+          name: userName,
           workRole: profile?.work_role || 'other',
         },
       });

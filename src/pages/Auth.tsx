@@ -83,7 +83,7 @@ const Auth = () => {
             description: "You've successfully signed in.",
           });
           
-          navigate(isAdminOrHR ? "/admin/dashboard" : "/");
+          navigate(isAdminOrHR ? "/admin/dashboard" : "/dashboard");
         }
       }
     } catch (error: any) {

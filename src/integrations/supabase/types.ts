@@ -286,6 +286,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      user_has_consented_persona: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "hr" | "standard"

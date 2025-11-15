@@ -11,7 +11,6 @@ import type { Database } from "@/integrations/supabase/types";
 
 type WorkRole = Database["public"]["Enums"]["work_role"];
 
-
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
@@ -40,17 +39,18 @@ const Auth = () => {
 
         if (authData.user) {
           // Update profile since trigger already creates it
-          const { error: profileError } = await supabase
-            .from("profiles")
-            .upsert({
+          const { error: profileError } = await supabase.from("profiles").upsert(
+            {
               id: authData.user.id,
               email: email,
               full_name: name || email.split("@")[0],
               work_role: workRole,
               user_role: "standard",
-            }, {
-              onConflict: "id"
-            });
+            },
+            {
+              onConflict: "id",
+            },
+          );
 
           if (profileError) throw profileError;
 
@@ -89,9 +89,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
-            Altera
-          </h1>
+          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">Altera</h1>
           <p className="text-muted-foreground">
             This tool is provided by your company to help you practice work conversations
           </p>
@@ -100,9 +98,7 @@ const Auth = () => {
         <Card className="shadow-medium border-border/50">
           <CardHeader>
             <CardTitle>Welcome to Altera</CardTitle>
-            <CardDescription>
-              {isSignUp ? "Create your account to get started" : "Sign in to continue"}
-            </CardDescription>
+            <CardDescription>{isSignUp ? "Create your account to get started" : "Sign in to continue"}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAuth} className="space-y-4">
@@ -126,11 +122,10 @@ const Auth = () => {
                         <SelectValue placeholder="Select your role" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="individual_contributor">Analyst / Individual Contributor</SelectItem>
+                        <SelectItem value="individual_contributor">Analyst</SelectItem>
                         <SelectItem value="manager">Manager</SelectItem>
-                        <SelectItem value="leadership">C-Level / Leadership</SelectItem>
+                        <SelectItem value="leadership">C-Level</SelectItem>
                         <SelectItem value="hr">HR</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -167,14 +162,8 @@ const Auth = () => {
               </Button>
 
               <div className="text-center text-sm">
-                <button
-                  type="button"
-                  onClick={() => setIsSignUp(!isSignUp)}
-                  className="text-primary hover:underline"
-                >
-                  {isSignUp
-                    ? "Already have an account? Sign in"
-                    : "Need an account? Sign up"}
+                <button type="button" onClick={() => setIsSignUp(!isSignUp)} className="text-primary hover:underline">
+                  {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
                 </button>
               </div>
             </form>

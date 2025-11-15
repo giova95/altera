@@ -108,27 +108,22 @@ const VoiceCall = () => {
 
     try {
       // Fetch conversation data from ElevenLabs
-      const { data: conversationData, error: convError } = await supabase.functions.invoke(
-        "elevenlabs-conversation",
-        {
-          body: { conversationId },
-        }
-      );
+      const { data: conversationData, error: convError } = await supabase.functions.invoke("elevenlabs-conversation", {
+        body: { conversationId },
+      });
 
       if (convError) {
         console.error("Error fetching conversation:", convError);
       }
 
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
 
       // Get user's profile to get work_role
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("work_role")
-        .eq("id", user.id)
-        .single();
+      const { data: profile } = await supabase.from("profiles").select("work_role").eq("id", user.id).single();
 
       const state = location.state as any;
 
@@ -159,9 +154,7 @@ const VoiceCall = () => {
           content: msg.message,
         }));
 
-        const { error: msgError } = await supabase
-          .from("simulation_messages")
-          .insert(messages);
+        const { error: msgError } = await supabase.from("simulation_messages").insert(messages);
 
         if (msgError) {
           console.error("Error saving messages:", msgError);
@@ -189,13 +182,9 @@ const VoiceCall = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/workspace")}
-            className="gap-2"
-          >
+          <Button variant="ghost" onClick={() => navigate("/dashboard")} className="gap-2">
             <ArrowLeft className="w-4 h-4" />
-            Back to workspace
+            Back to dashboard
           </Button>
         </div>
       </header>
@@ -219,11 +208,7 @@ const VoiceCall = () => {
                   className="h-24 w-24 rounded-full"
                   size="lg"
                 >
-                  {isStarting ? (
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                  ) : (
-                    <Phone className="h-8 w-8" />
-                  )}
+                  {isStarting ? <Loader2 className="h-8 w-8 animate-spin" /> : <Phone className="h-8 w-8" />}
                 </Button>
               ) : (
                 <div className="space-y-4 flex flex-col items-center">
@@ -237,11 +222,7 @@ const VoiceCall = () => {
                   <p className="text-sm text-muted-foreground">
                     {conversation.isSpeaking ? "AI is speaking..." : "Listening..."}
                   </p>
-                  <Button
-                    onClick={endCall}
-                    variant="destructive"
-                    className="h-16 w-16 rounded-full"
-                  >
+                  <Button onClick={endCall} variant="destructive" className="h-16 w-16 rounded-full">
                     <PhoneOff className="h-6 w-6" />
                   </Button>
                 </div>
@@ -250,12 +231,8 @@ const VoiceCall = () => {
 
             {conversation.status === "disconnected" && (
               <div className="text-center space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Click the phone button to start the call
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Make sure your microphone is enabled
-                </p>
+                <p className="text-sm text-muted-foreground">Click the phone button to start the call</p>
+                <p className="text-xs text-muted-foreground">Make sure your microphone is enabled</p>
               </div>
             )}
           </CardContent>

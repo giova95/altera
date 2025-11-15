@@ -40,7 +40,9 @@ const ScenarioSetup = () => {
 
   const loadPersonas = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         navigate("/auth");
         return;
@@ -49,13 +51,15 @@ const ScenarioSetup = () => {
       // Get all personas with consent, excluding the current user's persona
       const { data, error } = await supabase
         .from("ai_personas")
-        .select(`
+        .select(
+          `
           *,
           profiles (
             full_name,
             work_role
           )
-        `)
+        `,
+        )
         .eq("consent_given", true)
         .neq("user_id", user.id);
 
@@ -118,13 +122,9 @@ const ScenarioSetup = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/workspace")}
-            className="gap-2"
-          >
+          <Button variant="ghost" onClick={() => navigate("/dashboard")} className="gap-2">
             <ArrowLeft className="w-4 h-4" />
-            Back to workspace
+            Back to dashboard
           </Button>
         </div>
       </header>
@@ -132,18 +132,14 @@ const ScenarioSetup = () => {
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">Set up your scenario</h2>
-          <p className="text-muted-foreground">
-            Step {step} of 3
-          </p>
+          <p className="text-muted-foreground">Step {step} of 3</p>
         </div>
 
         {step === 1 && (
           <Card className="shadow-medium">
             <CardHeader>
               <CardTitle>Choose an AI persona to practice with</CardTitle>
-              <CardDescription>
-                Select which AI persona you want to have a conversation with
-              </CardDescription>
+              <CardDescription>Select which AI persona you want to have a conversation with</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {loading ? (
@@ -153,37 +149,28 @@ const ScenarioSetup = () => {
               ) : personas.length === 0 ? (
                 <div className="text-center py-8">
                   <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground mb-4">
-                    No AI personas available yet
-                  </p>
-                  <Button onClick={() => navigate("/persona/demo")}>
-                    Create your first persona
-                  </Button>
+                  <p className="text-muted-foreground mb-4">No AI personas available yet</p>
+                  <Button onClick={() => navigate("/persona/demo")}>Create your first persona</Button>
                 </div>
               ) : (
                 <>
-                  <RadioGroup 
-                    value={selectedPersonaId || ""} 
-                    onValueChange={(value) => setSelectedPersonaId(value)}
-                  >
+                  <RadioGroup value={selectedPersonaId || ""} onValueChange={(value) => setSelectedPersonaId(value)}>
                     {personas.map((persona) => {
                       const ownerName = persona.profiles?.full_name || "Unknown User";
-                      const workRole = persona.profiles?.work_role 
-                        ? persona.profiles.work_role.split('_').map(word => 
-                            word.charAt(0).toUpperCase() + word.slice(1)
-                          ).join(' ')
+                      const workRole = persona.profiles?.work_role
+                        ? persona.profiles.work_role
+                            .split("_")
+                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(" ")
                         : "No role specified";
-                      
+
                       return (
-                        <div 
+                        <div
                           key={persona.id}
                           className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer"
                         >
                           <RadioGroupItem value={persona.id} id={`persona-${persona.id}`} />
-                          <Label 
-                            htmlFor={`persona-${persona.id}`} 
-                            className="cursor-pointer flex-1"
-                          >
+                          <Label htmlFor={`persona-${persona.id}`} className="cursor-pointer flex-1">
                             <div className="font-medium">{ownerName}</div>
                             <div className="text-sm text-muted-foreground">{workRole}</div>
                           </Label>
@@ -192,11 +179,7 @@ const ScenarioSetup = () => {
                     })}
                   </RadioGroup>
 
-                  <Button
-                    onClick={() => setStep(2)}
-                    disabled={!selectedPersonaId}
-                    className="w-full"
-                  >
+                  <Button onClick={() => setStep(2)} disabled={!selectedPersonaId} className="w-full">
                     Continue
                   </Button>
                 </>
@@ -209,9 +192,7 @@ const ScenarioSetup = () => {
           <Card className="shadow-medium">
             <CardHeader>
               <CardTitle>What's the theme?</CardTitle>
-              <CardDescription>
-                What type of conversation is this?
-              </CardDescription>
+              <CardDescription>What type of conversation is this?</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <RadioGroup value={theme || ""} onValueChange={(value) => setTheme(value as Theme)}>
@@ -263,9 +244,7 @@ const ScenarioSetup = () => {
           <Card className="shadow-medium">
             <CardHeader>
               <CardTitle>How are you feeling?</CardTitle>
-              <CardDescription>
-                Understanding your emotions helps us provide better coaching
-              </CardDescription>
+              <CardDescription>Understanding your emotions helps us provide better coaching</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <RadioGroup value={emotion || ""} onValueChange={(value) => setEmotion(value as Emotion)}>

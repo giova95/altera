@@ -30,7 +30,6 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/workspace" element={<Workspace />} />
           <Route path="/scenario/setup" element={<ScenarioSetup />} />
           <Route path="/voice-call" element={<VoiceCall />} />
           <Route path="/persona/create" element={<PersonaCreate />} />

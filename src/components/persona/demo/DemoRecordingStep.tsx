@@ -75,25 +75,60 @@ export const DemoRecordingStep = ({ onContinue, onBack }: DemoRecordingStepProps
       formData.append('displayName', 'Demo Persona');
       formData.append('description', 'Demo voice for Altera communication coach.');
 
-      const { data, error } = await supabase.functions.invoke('elevenlabs-create-voice', {
+      // Step 1: Create voice in ElevenLabs
+      const { data: voiceData, error: voiceError } = await supabase.functions.invoke('elevenlabs-create-voice', {
         body: formData,
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
 
-      if (error) throw error;
+      if (voiceError) throw voiceError;
 
-      if (!data.voiceId) {
+      if (!voiceData.voiceId) {
         throw new Error('No voice ID returned from ElevenLabs');
       }
 
-      toast({
-        title: "Voice created successfully",
-        description: "Your AI voice persona is ready to test!",
+      console.log("Voice created:", voiceData.voiceId);
+
+      // Step 2: Create conversational AI agent with this voice
+      const { data: agentData, error: agentError } = await supabase.functions.invoke('elevenlabs-create-agent', {
+        body: {
+          voiceId: voiceData.voiceId,
+          name: 'Demo Persona Agent',
+        },
       });
 
-      onContinue(data.voiceId);
+      if (agentError) {
+        console.error("Error creating agent:", agentError);
+        // Continue even if agent creation fails - we can retry later
+      }
+
+      const agentId = agentData?.agent_id || null;
+      console.log("Agent created:", agentId);
+
+      // Step 3: Update the persona in database with both voice_id and agent_id
+      const { error: updateError } = await supabase
+        .from('ai_personas')
+        .update({
+          voice_profile_id: voiceData.voiceId,
+          agent_id: agentId,
+          status: 'active',
+        })
+        .eq('user_id', session.user.id);
+
+      if (updateError) {
+        console.error("Error updating persona:", updateError);
+      }
+
+      toast({
+        title: "Voice persona created successfully",
+        description: agentId 
+          ? "Your AI voice persona and conversational agent are ready!"
+          : "Your AI voice persona is ready! Agent will be created when needed.",
+      });
+
+      onContinue(voiceData.voiceId);
     } catch (error) {
       console.error('Error creating voice:', error);
       toast({

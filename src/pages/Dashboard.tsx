@@ -35,7 +35,7 @@ const Dashboard = () => {
         .from("profiles")
         .select("*")
         .eq("id", session.user.id)
-        .single();
+        .maybeSingle();
 
       setProfile(profileData);
 
@@ -44,7 +44,7 @@ const Dashboard = () => {
         .from("ai_personas")
         .select("*")
         .eq("user_id", session.user.id)
-        .single();
+        .maybeSingle();
 
       setPersona(personaData);
 

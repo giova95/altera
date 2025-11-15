@@ -33,7 +33,7 @@ const PersonaDemo = () => {
         .from("ai_personas")
         .select("*")
         .eq("user_id", session.user.id)
-        .single();
+        .maybeSingle();
 
       // If they have a persona, redirect to dashboard
       if (persona) {

@@ -25,14 +25,14 @@ const Workspace = () => {
         .from("profiles")
         .select("*")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
       setProfile(profileData);
 
       const { data: personaData } = await supabase
         .from("ai_personas")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
       setPersona(personaData);
     };
 

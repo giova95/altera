@@ -130,9 +130,11 @@ const VoiceCall = () => {
         .from("profiles")
         .select("work_role")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
       const state = location.state as any;
+
+      console.log("Creating simulation with state:", state);
 
       // Create simulation record
       const { data: simulation, error: simError } = await supabase

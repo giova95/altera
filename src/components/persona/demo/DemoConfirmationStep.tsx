@@ -154,8 +154,8 @@ export const DemoConfirmationStep = ({ voiceId }: DemoConfirmationStepProps) => 
           </div>
 
           <div className="flex justify-center pt-4">
-            <Button onClick={() => navigate('/')} variant="outline" size="lg">
-              Back to My Space
+            <Button onClick={() => navigate('/dashboard')} variant="outline" size="lg">
+              Go to Dashboard
             </Button>
           </div>
         </CardContent>

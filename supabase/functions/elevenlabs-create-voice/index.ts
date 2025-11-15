@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,6 +15,25 @@ serve(async (req) => {
     const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
     if (!ELEVENLABS_API_KEY) {
       throw new Error("ELEVENLABS_API_KEY is not configured");
+    }
+
+    // Get authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error("Missing authorization header");
+    }
+
+    // Create Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    // Get current user
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
+      throw new Error("Unauthorized");
     }
 
     const formData = await req.formData();
@@ -53,9 +73,28 @@ serve(async (req) => {
     }
 
     const result = await response.json();
+    const voiceId = result.voice_id;
+
+    // Save persona to database
+    const { error: personaError } = await supabaseClient
+      .from("ai_personas")
+      .upsert({
+        user_id: user.id,
+        voice_profile_id: voiceId,
+        status: "active",
+        consent_given: true,
+        consent_timestamp: new Date().toISOString(),
+      }, {
+        onConflict: "user_id"
+      });
+
+    if (personaError) {
+      console.error("Error saving persona:", personaError);
+      throw personaError;
+    }
     
     return new Response(
-      JSON.stringify({ voiceId: result.voice_id }),
+      JSON.stringify({ voiceId, personaCreated: true }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

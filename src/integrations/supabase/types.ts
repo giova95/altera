@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       ai_personas: {
         Row: {
+          agent_id: string | null
           consent_given: boolean
           consent_timestamp: string | null
           context_events: Json | null
@@ -31,6 +32,7 @@ export type Database = {
           voice_profile_id: string | null
         }
         Insert: {
+          agent_id?: string | null
           consent_given?: boolean
           consent_timestamp?: string | null
           context_events?: Json | null
@@ -46,6 +48,7 @@ export type Database = {
           voice_profile_id?: string | null
         }
         Update: {
+          agent_id?: string | null
           consent_given?: boolean
           consent_timestamp?: string | null
           context_events?: Json | null

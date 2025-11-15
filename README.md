@@ -1,73 +1,51 @@
-# Welcome to your Lovable project
+# Altera
 
-## Project info
+Master difficult workplace conversations through AI-powered practice simulations.
 
-**URL**: https://lovable.dev/projects/08efcabc-013a-4698-bb36-a75467da4fc2
+## Overview
 
-## How can I edit this code?
+Altera is an enterprise training platform that helps employees build confidence in challenging workplace scenarios using personalized AI personas. Practice feedback conversations, conflict resolution, performance reviews, and more in a safe, judgment-free environment.
 
-There are several ways of editing your application.
+### Key Features
 
-**Use Lovable**
+- **Personalized AI Personas**: Create voice-cloned AI agents that mirror your communication style
+- **Scenario-Based Training**: Practice P2-P6 workplace scenarios (conflict resolution, difficult requests, performance management, upward reporting, terminations)
+- **Skill Analytics**: Track progress across confidence, clarity, empathy, assertiveness, and stress management
+- **Admin Dashboard**: HR and managers access team analytics, ROI metrics, and compliance insights
+- **Real-Time Voice Conversations**: Natural voice interactions powered by ElevenLabs
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/08efcabc-013a-4698-bb36-a75467da4fc2) and start prompting.
+## Test Credentials
 
-Changes made via Lovable will be committed automatically to this repo.
+### HR Role
+- **Email**: `f.delvecchio@altera.com`
+- **Password**: `password`
+- **Access**: Admin dashboard with full analytics and team management
 
-**Use your preferred IDE**
+### Manager Role
+- **Email**: `l.catalano@altera.com`
+- **Password**: `password`
+- **Access**: Standard dashboard with personal training sessions
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Frontend**: React, TypeScript, Tailwind CSS, Vite
+- **Backend**: Lovable Cloud (Supabase)
+- **AI**: ElevenLabs Conversational AI
+- **Charts**: Recharts
+- **UI**: shadcn/ui components
 
-Follow these steps:
+## Getting Started
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Start development server: `npm run dev`
+4. Access the app at `http://localhost:5173`
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## Deployment
 
-# Step 3: Install the necessary dependencies.
-npm i
+Deploy via [Lovable](https://lovable.dev/projects/08efcabc-013a-4698-bb36-a75467da4fc2) by clicking Share → Publish.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+## License
 
-**Edit a file directly in GitHub**
+Proprietary - All rights reserved
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/08efcabc-013a-4698-bb36-a75467da4fc2) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)

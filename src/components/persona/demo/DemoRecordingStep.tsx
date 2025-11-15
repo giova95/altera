@@ -88,10 +88,17 @@ export const DemoRecordingStep = ({ onContinue, onBack }: DemoRecordingStepProps
         throw new Error('No voice ID returned from ElevenLabs');
       }
 
-      toast({
-        title: "Voice created successfully",
-        description: "Your AI voice persona is ready to test!",
-      });
+      if (data.agentId) {
+        toast({
+          title: "Voice and agent created successfully",
+          description: "Your AI persona is ready for voice conversations!",
+        });
+      } else {
+        toast({
+          title: "Voice created successfully",
+          description: "Voice created but agent setup failed. You can still use text-to-speech features.",
+        });
+      }
 
       onContinue(data.voiceId);
     } catch (error) {

@@ -86,71 +86,12 @@ serve(async (req) => {
     const result = await response.json();
     const voiceId = result.voice_id;
 
-    console.log("Voice created successfully:", voiceId);
-
-    // Get user profile for agent configuration
-    const { data: profile } = await supabaseClient
-      .from("profiles")
-      .select("full_name")
-      .eq("id", user.id)
-      .single();
-
-    const userName = profile?.full_name || "User";
-
-    // Create conversational AI agent with the voice
-    let agentId = null;
-    try {
-      const agentResponse = await fetch(
-        "https://api.elevenlabs.io/v1/convai/agents/create",
-        {
-          method: "POST",
-          headers: {
-            "xi-api-key": ELEVENLABS_API_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            conversation_config: {
-              agent: {
-                prompt: {
-                  prompt: `You are an AI persona representing ${userName}. You are participating in a workplace communication simulation. Respond naturally and authentically based on the conversation context. Be helpful, professional, and maintain the personality traits associated with this persona.`,
-                },
-                first_message: "Hello! I'm ready to have a conversation with you.",
-                language: "en",
-              },
-              tts: {
-                voice_id: voiceId,
-              },
-            },
-            platform_settings: {
-              widget: {
-                variant: "full-screen",
-              },
-            },
-          }),
-        }
-      );
-
-      if (agentResponse.ok) {
-        const agentData = await agentResponse.json();
-        agentId = agentData.agent_id;
-        console.log("Agent created successfully:", agentId);
-      } else {
-        const errorText = await agentResponse.text();
-        console.error("ElevenLabs agent creation error:", agentResponse.status, errorText);
-        // Don't fail - voice was created successfully
-      }
-    } catch (agentError) {
-      console.error("Error creating agent:", agentError);
-      // Don't fail - voice was created successfully
-    }
-
-    // Save persona to database with both voice and agent IDs
+    // Save persona to database
     const { error: personaError } = await supabaseClient
       .from("ai_personas")
       .upsert({
         user_id: user.id,
         voice_profile_id: voiceId,
-        agent_id: agentId,
         status: "active",
         consent_given: true,
         consent_timestamp: new Date().toISOString(),
@@ -164,11 +105,7 @@ serve(async (req) => {
     }
     
     return new Response(
-      JSON.stringify({ 
-        voiceId, 
-        agentId,
-        personaCreated: true 
-      }),
+      JSON.stringify({ voiceId, personaCreated: true }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
